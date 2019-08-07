@@ -15,11 +15,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/zensqlmonitor/influxdb-sqlserver/Godeps/_workspace/src/github.com/BurntSushi/toml"
+	vault "github.com/hashicorp/vault/api"
 
-	cfg "github.com/zensqlmonitor/influxdb-sqlserver/config"
-	"github.com/zensqlmonitor/influxdb-sqlserver/etl"
-	"github.com/zensqlmonitor/influxdb-sqlserver/log"
+	"github.com/dchote/influxdb-sqlserver/Godeps/_workspace/src/github.com/BurntSushi/toml"
+
+	cfg "github.com/dchote/influxdb-sqlserver/config"
+	"github.com/dchote/influxdb-sqlserver/etl"
+	"github.com/dchote/influxdb-sqlserver/log"
 )
 
 var wg sync.WaitGroup
@@ -30,6 +32,7 @@ var fConfig = flag.String("config", "influxdb-sqlserver.conf", "the configuratio
 type TOMLConfig cfg.TOMLConfig
 
 var config TOMLConfig
+var vaultClient *vault.Client
 
 type DynMap map[string]interface{}
 
@@ -283,6 +286,29 @@ func init() {
 // Utils
 //
 func connectionString(server cfg.Server) string {
+	if len(server.Vault_Key) > 0 && (len(server.Username) == 0 || len(server.Password) == 0) {
+		log.Info("fetching username and password for " + server.IP + " from Vault using " + server.Vault_Key)
+
+		secret, err := vaultClient.Logical().Read("secret/data/" + server.Vault_Key)
+		if err != nil {
+			log.Error(3, "Failed to read vault secret", err)
+			panic(err)
+		}
+
+		if secret == nil || secret.Data == nil {
+			fmt.Printf("secret response: %s", secret)
+			panic("Failed to read vault secret for " + server.Vault_Key)
+		}
+
+		//
+		// there has to be a better way... I could re-marshall as JSON then Unmarshall.. buttttt... this seems faster
+		//
+		server.Username = secret.Data["data"].(map[string]interface{})["username"].(string)
+		server.Password = secret.Data["data"].(map[string]interface{})["password"].(string)
+
+		log.Info("successfully fetched username and password for " + server.IP)
+	}
+
 	return fmt.Sprintf(
 		"Server=%s;Port=%v;User Id=%s;Password=%s;app name=influxdb-sqlserver;log=1",
 		server.IP, server.Port, server.Username, server.Password)
@@ -311,6 +337,25 @@ func main() {
 
 	// listen to System Signals
 	go listenToSystemSignals()
+
+	// setup vault api client
+	if len(config.Vault.Url) > 0 {
+		log.Info("Vault URL: " + config.Vault.Url)
+
+		var err error
+		vaultClient, err = vault.NewClient(&vault.Config{
+			Address: config.Vault.Url,
+		})
+
+		if err != nil {
+			log.Error(1, "Error creating Vault API client", err)
+			return
+		}
+
+		vaultClient.SetToken(config.Vault.Token)
+
+		log.Info("Vault API client created")
+	}
 
 	// polling loop
 	log.Info("Starting influxdb-sqlserver")

@@ -17,7 +17,7 @@ const (
 	DefaultDailyRotate  bool   = true
 	DefaultMaxDays      int    = 7
 
-	DefaultSqlScriptPath string = "/usr/local/influxdb-sqlserver/sqlscripts/"
+	DefaultSqlScriptPath string = "./sqlscripts/"
 
 	DefaultPollingInterval        int = 15
 	DefaultPollingIntervalIfError int = 60
@@ -30,6 +30,7 @@ const (
 
 type TOMLConfig struct {
 	InfluxDB influxDB
+	Vault    VaultServer
 	Servers  map[string]Server
 	Scripts  map[string]*script
 	Polling  polling
@@ -47,6 +48,11 @@ type influxDB struct {
 	Precision string
 	TimeOut   int
 }
+type VaultServer struct {
+	Url   string
+	Token string
+}
+
 type logging struct {
 	Modes        string
 	BufferLen    int
@@ -61,10 +67,11 @@ type logging struct {
 	MaxDays      int
 }
 type Server struct {
-	IP       string
-	Port     int
-	Username string
-	Password string
+	IP        string
+	Port      int
+	Username  string
+	Password  string
+	Vault_Key string
 }
 type script struct {
 	Name     string
