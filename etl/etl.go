@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	_ "github.com/zensqlmonitor/go-mssqldb"
+	_ "github.com/denisenkom/go-mssqldb"
 )
 
 type Extracter interface {
@@ -33,15 +33,22 @@ func NewExtracter(connString, query string) extracter {
 
 func (ext *extracter) Extract() error {
 	// deferred opening
+	//fmt.Println(ext.connString)
+
 	conn, err := sql.Open("mssql", ext.connString)
 	if err != nil {
 		// Handle error
 		return errors.New(err.Error())
 	}
+
+	conn.SetMaxOpenConns(100)
+	conn.SetMaxIdleConns(100)
+
 	// verify that a connection can be made before making a query
 	err = conn.Ping()
 	if err != nil {
 		// Handle error
+		fmt.Println("ping error")
 		return errors.New(err.Error())
 	}
 	defer conn.Close()
@@ -50,6 +57,7 @@ func (ext *extracter) Extract() error {
 	rows, err := conn.Query(ext.query)
 	if err != nil {
 		// Handle error
+		fmt.Println("query error" + err.Error())
 		return errors.New(err.Error())
 	}
 	defer rows.Close()
@@ -65,6 +73,7 @@ func (ext *extracter) Extract() error {
 	}
 	if err := rows.Err(); err != nil {
 		// Handle error
+		fmt.Println("rows error")
 		return errors.New(err.Error())
 	}
 

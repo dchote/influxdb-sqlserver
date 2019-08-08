@@ -310,7 +310,7 @@ func connectionString(server cfg.Server) string {
 	}
 
 	return fmt.Sprintf(
-		"Server=%s;Port=%v;User Id=%s;Password=%s;app name=influxdb-sqlserver;log=1",
+		"Server=%s;Port=%v;User Id=%s;Password=%s;app name=influxdb-sqlserver;log=2",
 		server.IP, server.Port, server.Username, server.Password)
 }
 
