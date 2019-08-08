@@ -128,6 +128,9 @@ func (config *TOMLConfig) initLogging() {
 // and returns an error describing any problems or nil.
 func (toml *TOMLConfig) Validate() error {
 	// defaults
+	if toml.Defaults.ScriptPath == "" {
+		toml.Defaults.ScriptPath = cfg.DefaultSqlScriptPath
+	}
 	if toml.Logging.FileName == "" {
 		toml.Logging.FileName = cfg.DefaultLogFileName
 	}
@@ -369,7 +372,7 @@ func main() {
 		for _, script := range scripts { // foreach script
 
 			// test if path exists
-			scriptPath := cfg.DefaultSqlScriptPath + script.Name
+			scriptPath := config.Defaults.ScriptPath + script.Name
 			scriptInterval := script.Interval
 
 			if _, err := os.Stat(scriptPath); err != nil {

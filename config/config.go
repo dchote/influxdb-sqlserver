@@ -29,6 +29,7 @@ const (
 )
 
 type TOMLConfig struct {
+	Defaults defaults
 	InfluxDB influxDB
 	Vault    VaultServer
 	Servers  map[string]Server
@@ -36,6 +37,11 @@ type TOMLConfig struct {
 	Polling  polling
 	Logging  logging
 }
+
+type defaults struct {
+	ScriptPath string
+}
+
 type polling struct {
 	Interval        int
 	IntervalIfError int
