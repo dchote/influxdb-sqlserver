@@ -2,9 +2,9 @@
 [Email](mailto:sqlzen@hotmail.com)
 
 # influxdb-sqlserver
-Collect Microsoft SQL Server metrics, send to InfluxDB and visualize with Grafana
+Collect Microsoft SQL Server metrics, send to InfluxDB and visualize with Grafana. Now with added HashiCorp Vault support!
 
-![influxdb-grafana](https://cloud.githubusercontent.com/assets/16494280/13547132/aca6b6ca-e2c5-11e5-9f97-d6ff90918daa.png)
+
 
 
 ## Getting Started
@@ -14,7 +14,7 @@ Collect Microsoft SQL Server metrics, send to InfluxDB and visualize with Grafan
 	- [Create database SQLSERVER](https://influxdb.com/docs/v0.9/introduction/getting_started.html) <br />
 - Grafana:
 	- [Install Grafana](http://docs.grafana.org/installation/)
-	- Import dashboard from file provided in the [repository](https://github.com/zensqlmonitor/influxdb-sqlserver/tree/master/grafana) <br />
+	- Import dashboard from file provided in the [repository](https://github.com/dchote/influxdb-sqlserver/tree/master/grafana) <br />
 - influxdb-sqlserver:
 	- [Install GO](https://golang.org/doc/install)
 	- [Setup you GOPATH](https://golang.org/doc/code.html#GOPATH)
@@ -50,6 +50,23 @@ Collect Microsoft SQL Server metrics, send to InfluxDB and visualize with Grafan
 -config (string) = the configuration filepath in toml format (default="influxdb-sqlserver.conf")
 -h = usage
  ``` 
+ 
+### Vault secret storage
+
+You can now use HashiCorp Vault to store your SQL Server credentials.  Ensure you have functional Vault installation, this can either be local on the system that will be running influxdb-sqlserver, or a shared instance somewhere (https://www.vaultproject.io/docs/install/).
+
+Update `influxdb-sqlserver.conf` with the relevant vault.url & vault.token values, best practise is to create a token with read access specifically for this app.
+
+Store the `username` and `password` for your SQL Server instance in vault: `vault kv put secret/VAULT_KEY username="USERNAME" password="STRONG_PASSWORD"`. VAULT_KEY, USERNAME, and PASSWORD should be unique for your server definition.
+
+Add or edit the server instance in `influxdb-sqlserver.conf` for this secret.
+```
+  [servers.VAULTEXAMPLE]
+  ip = "IP_OR_HOSTNAME" 
+  port = INSTANCE_PORT       
+  vault_key="VAULT_KEY"
+``` 
+
  
 ## T-SQL Scripts provided
 Scripts provided are lightweight and use Dynamic Management Views supplied by SQL Server

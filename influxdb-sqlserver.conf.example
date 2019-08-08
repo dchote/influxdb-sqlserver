@@ -27,6 +27,13 @@
   # username="influxdb-sqlserver"
   # password="influxdb-sqlservermetrics"
 
+###
+### Vault
+###
+### Controls Vault api endpoint
+[vault]
+    url="http://127.0.0.1:8200"  
+    token="VAULT_TOKEN"
 
 ###
 ### Servers
@@ -39,18 +46,17 @@
 ### On Windows, if user id is empty or missing Single-Sign-On is used.
 [servers]
 
-  [servers.win8-dev1]
-  ip = "192.168.1.30" 
-  port = 1433       
-  username="telegraf"
-  password="T$l$gr@f69*"
+  [servers.UPEXAMPLE]
+  ip = "IP_OR_HOSTNAME" 
+  port = INSTANCE_PORT       
+  username="USERNAME"
+  password="PASSWORD"
 
-  [servers.win8-dev2]
-  ip = "192.168.1.30"
-  port = 2222
-  username="telegraf"
-  password="T$l$gr@f69*"
-
+  [servers.VAULTEXAMPLE]
+  ip = "IP_OR_HOSTNAME" 
+  port = INSTANCE_PORT       
+  vault_key="VAULT_KEY"
+  
 ###
 ### Scripts
 ###
