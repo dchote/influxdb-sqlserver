@@ -247,7 +247,7 @@ func (p *Param) gather() {
 			err = ext.Extract()
 			if err != nil {
 				// Handle error
-				log.Error(1, "Error while executing script", err)
+				log.Error(1, "Error while executing script: "+p.fullFilePath+" - ", err)
 			}
 			stringSlice := strings.Split(p.connString, ";")
 			log.Trace(fmt.Sprintf("<-- Extract | %v sec | %s,%s | %s | took %s", p.pollingInterval,
